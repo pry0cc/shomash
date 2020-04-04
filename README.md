@@ -1,8 +1,7 @@
 # Shomash
-A parallel shodan client that can utilize as many shodan API keys as you have (to bypass the 1/request a second rate limit).
+A simple shodan client that takes input via stdin and outputs in JSON.
 
 If you want to very quickly obtain a shodan passive port scan of an entire enviornment it's super easy.
-
 
 A basic request:
 ```
@@ -21,7 +20,7 @@ This single command will pull subdomains from subfinder, check that they resolve
 go get -u github.com/pry0cc/shomash
 ```
 
-Then add all your Shodan keys (the more the better!) in `~/.shomash`, Shomash will initialize a new thread for each key, so adding 25 keys will make your scan be able to operate at 25 requests / second, not bad huh?
+Then add your Shodan key in `~/.shomash`.
 
 ### Examples
 
