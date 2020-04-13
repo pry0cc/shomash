@@ -56,61 +56,32 @@ func main() {
 	output := make(chan string)
 	var wg sync.WaitGroup
 
+	bulkAmount := 100
+	stop := false
+
 	for i := 0; i < len(keys); i++ {
 		wg.Add(1)
 
-		go func(x int) {
-			for {
-				pastCounter := false
-
-				array := []string{}
-				total := 2
-
-				for a := 0; a < total; a++ {
-					ipList := ""
-					if pastCounter && len(ips) < total {
-						total = len(ips)
-					}
-
-					if len(ips) > 0 {
-						if !pastCounter {
-							pastCounter = true
-						}
-					}
-
-					if pastCounter && len(ips) > total {
-						total = len(ips)
-					}
-
-					ipList, ok := <-ips
-					if ok {
-						array = append(array, ipList)
-					} else {
-						ipList = strings.Join(array, ",")
-						output <- QueryShodan(ipList, keys[x])
+		go func(i int) {
+			defer wg.Done()
+			for !stop {
+				bulkList := []string{}
+				for x := 0; x < bulkAmount; x++ {
+					ip, ok := <-ips
+					if !ok {
+						stop = true
 						break
 					}
-
-					if pastCounter && len(ips) == 0 {
-						time.Sleep(time.Second * 3)
-						if pastCounter && len(ips) == 0 {
-							defer wg.Done()
-						}
-					}
-
-					ipList = strings.Join(array, ",")
-					output <- QueryShodan(ipList, keys[x])
-					time.Sleep(time.Second * 1)
+					bulkList = append(bulkList, ip)
 				}
-
+				queryString := strings.Join(bulkList, ",")
+				output <- QueryShodan(queryString, keys[i])
+				time.Sleep(time.Second * 1)
 			}
-			wg.Done()
-
 		}(i)
 	}
 
 	go func() {
-		ips <- "1.1.1.1"
 		sc := bufio.NewScanner(os.Stdin)
 		for sc.Scan() {
 			ips <- sc.Text()
@@ -124,13 +95,16 @@ func main() {
 	for item := range output {
 		var results []map[string]interface{}
 		json.Unmarshal([]byte(item), &results)
+		if len(results) == 0 {
+			var result map[string]interface{}
+			json.Unmarshal([]byte(item), &result)
+			results = append(results, result)
+		}
 		for _, result := range results {
-			if result["ip_str"] != nil && result["ip_str"].(string) != "1.1.1.1" {
-				fmt.Println("Successfully scanned " + result["ip_str"].(string))
-				jsonStr, _ := json.Marshal(result)
-				path := outdir + "/" + result["ip_str"].(string) + ".json"
-				ioutil.WriteFile(path, []byte(string(jsonStr)), 0644)
-			}
+			fmt.Println("Successfully scanned " + result["ip_str"].(string))
+			jsonStr, _ := json.Marshal(result)
+			path := outdir + "/" + result["ip_str"].(string) + ".json"
+			ioutil.WriteFile(path, []byte(string(jsonStr)), 0644)
 		}
 
 	}
