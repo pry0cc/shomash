@@ -44,7 +44,7 @@ func QueryShodan(ips string, key string) string {
 }
 
 func main() {
-	keys := []string{"fd12FQLsxxz7Rebw3XY8KHG1IywQsvyI"}
+	keys := []string{"moLl5BXXZjXgaUhWDh2DdSEMkMitQepM"}
 	var domain = flag.String("d", "example.com", "The domain (used for storage in output/$domain)")
 	flag.Parse()
 	outdir := filepath.Join(".", "output", *domain)
