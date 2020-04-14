@@ -44,9 +44,7 @@ func QueryShodan(ips string, key string) string {
 }
 
 func main() {
-	// keys := []string{"R6D6qC9QE0DyFkMW3CeNCurq6IVEYCat", "fd12FQLsxxz7Rebw3XY8KHG1IywQsvyI", "MM72AkzHXdHpC8iP65VVEEVrJjp7zkgd", "VTCNUPjwvgQtAjdUAiwatg00qGeJkuXv", "SLSmbzwIS2oQbAMevr9aXZ6VjPXPozXN", "YbI0bF8iqUJO6Zc58trmFYF0ZUEhdRjK", "EXdwhpQ8y0di0jVGUAx8P9ymtZ5xl0Rg", "j615x8hchMZ8cNVgurPAwePORJz7uVV2", "NaskNg5YlPKZutlMBS7gS0s4nj113um0", "16Za8QtX0kdg4zCcdgGCWp1HoOVVkDyU", "CUB0v414pREWOnciSC6rnSg5qiQP5Ar4", "WqjWlUYXwGlLlhAlyh9JweM9MbLxBN9b", "ZfdCSbmiFXS3yUScyK0Qwn04i4Ns79d7", "m6iE3U8JzekQlteJ9aagLZzop5o6GlyH", "LvVwc2HFpBz80ujOqYQUfyBZliguBxih", "XyvQ904Ts1cL7V6Vt720VwcmazoTfhNT", "qgz3HRM2F2ceDmMzca4l6MtJ2wsNmjMt", "IHWttHEPp25zpNNYfXPbhliqcT8BVcvQ", "eMunoAodm8qSabxv2J6c8KzqYw11OSe7", "9sjTu3AuGdUesGluaQyy48LhhZuiS3Mt", "FRz6i2jqMEy8AL5eOZiJmDk8UkghWmx0", "UFh6iXrpV7fnZejI3wBsxTrZ5yNr1fxw", "Djls4J23qaUnKVrm5KGAx9exhTvSuxqo", "xZGEZR9KYaHV3YDZqJyioNjXpLB0mQ0H", "Kydu5HdKI7vz2dSIQbMTYqHZkYwQzw4D"}
 	keys := []string{"fd12FQLsxxz7Rebw3XY8KHG1IywQsvyI"}
-	// domain := "example.com"
 	var domain = flag.String("d", "example.com", "The domain (used for storage in output/$domain)")
 	flag.Parse()
 	outdir := filepath.Join(".", "output", *domain)
@@ -101,10 +99,12 @@ func main() {
 			results = append(results, result)
 		}
 		for _, result := range results {
-			fmt.Println("Successfully scanned " + result["ip_str"].(string))
-			jsonStr, _ := json.Marshal(result)
-			path := outdir + "/" + result["ip_str"].(string) + ".json"
-			ioutil.WriteFile(path, []byte(string(jsonStr)), 0644)
+			if result["ip_str"] != nil {
+				fmt.Println("Successfully scanned " + result["ip_str"].(string))
+				jsonStr, _ := json.Marshal(result)
+				path := outdir + "/" + result["ip_str"].(string) + ".json"
+				ioutil.WriteFile(path, []byte(string(jsonStr)), 0644)
+			}
 		}
 
 	}
